@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SharpCompress" Version="0.32.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="database\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="database\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="database\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="database\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="database\index.json" />
+      <_ContentIncludedByDefault Remove="database\version.json" />
+    </ItemGroup>
+
+</Project>
