@@ -59,6 +59,8 @@ public class ResultController : ControllerBase
         if (!IsKnownClient())
             return NotFound();
         
-        return AeqIndexCache.Search(query);
+        var results = AeqIndexCache.Search(query, 50, out var isPartialBool);
+        Response.Headers.Add("X-Partial-Result", isPartialBool ? "1" : "0");
+        return results;
     }
 }

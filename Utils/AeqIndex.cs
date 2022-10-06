@@ -167,14 +167,22 @@ public static class AeqIndexCache
 
     public static AeqSearchResult? LookupId(long id) => index.ContainsKey(id) ? index[id] : null;
 
-    public static AeqSearchResult[] Search(string query)
+    public static AeqSearchResult[] Search(string query, int limit, out bool isPartialResult)
     {
+        isPartialResult = false;
+        
         if (query.Trim().Length < 1)
             return Array.Empty<AeqSearchResult>();
 
-        return index.Values
+        var results = index.Values
             .Where(x => x.Name?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)
-            .Take(50)
+            .Take(limit + 1)
+            .ToArray();
+
+        isPartialResult = results.Count() > limit;
+
+        return results
+            .Take(limit)
             .ToArray();
     }
 }
