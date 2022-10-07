@@ -1,4 +1,5 @@
 using AutoEqApi.Utils;
+using Microsoft.AspNetCore.Rewrite;
 
 var builder = WebApplication.CreateBuilder(args);
 
