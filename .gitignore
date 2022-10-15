@@ -6,3 +6,4 @@ riderModule.iml
 database/
 update/
 .idea
+appsettings.json
