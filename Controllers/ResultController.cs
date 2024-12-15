@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using AutoEqApi.Model;
 using AutoEqApi.Utils;
@@ -8,21 +9,21 @@ namespace AutoEqApi.Controllers;
 
 [ApiController]
 [Route("results")]
-public class ResultController : ControllerBase
+public class ResultController(ILogger<ResultController> logger) : ControllerBase
 {
-    private readonly ILogger<ResultController> _logger;
-
-    public ResultController(ILogger<ResultController> logger)
-    {
-        _logger = logger;
-    }
-
     private bool IsKnownClient()
     {
-        var isKnown = Request.Headers["User-Agent"].Any(x => x.StartsWith("RootlessJamesDSP"));
+        var isKnown = Request.Headers.UserAgent.Any(x => x?.StartsWith("RootlessJamesDSP") == true);
         if(!isKnown) 
-            _logger.LogWarning($"Unknown UA: {string.Join(";", Request.Headers["User-Agent"])}");
+            logger.LogWarning($"Unknown UA: {string.Join(";", Request.Headers.UserAgent.ToArray())}");
         return isKnown;
+    }
+
+    private void Log(string str)
+    {
+        var ip = Request.Headers["CF-Connecting-IP"].FirstOrDefault();
+        var country = Request.Headers["CF-IPCountry"].FirstOrDefault();
+        logger.LogInformation($"GET results/{str} - {ip} ({country})");
     }
     
     [Route("{id:long}")]
@@ -30,6 +31,8 @@ public class ResultController : ControllerBase
     public async Task<ActionResult<string>> Get([FromRoute] long id)
     {
         var result = AeqIndexCache.LookupId(id);
+        Log($"{id} ({result?.Name}; {result?.Source})");
+
         if (result == null || !IsKnownClient())
             return NotFound();
 
@@ -38,16 +41,16 @@ public class ResultController : ControllerBase
             await using var stream = new FileStream(result.AsPath(), FileMode.Open, FileAccess.Read, FileShare.Read);
             using var reader = new StreamReader(stream, Encoding.UTF8);
             
-            Response.Headers.Add("X-Profile-Name", result.Name);
-            Response.Headers.Add("X-Profile-Source", result.Source);
-            Response.Headers.Add("X-Profile-Rank", result.Rank.ToString());
-            Response.Headers.Add("X-Profile-Id", result.Id.ToString());
+            Response.Headers["X-Profile-Name"] = result.Name;
+            Response.Headers["X-Profile-Source"] = result.Source;
+            Response.Headers["X-Profile-Rank"] = result.Rank.ToString();
+            Response.Headers["X-Profile-Id"] = result.Id.ToString();
             
             return await reader.ReadToEndAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            logger.LogError(ex.ToString());
             return StatusCode(500);
         }
     }
@@ -56,13 +59,15 @@ public class ResultController : ControllerBase
     [HttpGet]
     public ActionResult<AeqSearchResult[]> Search([FromRoute] string query)
     {
+        Log($"search/{query}");
+
         if (!IsKnownClient())
             return NotFound();
 
         const int limit = 100;
         var results = AeqIndexCache.Search(query, limit, out var isPartialBool);
-        Response.Headers.Add("X-Partial-Result", isPartialBool ? "1" : "0");
-        Response.Headers.Add("X-Limit", limit.ToString());
+        Response.Headers["X-Partial-Result"] = isPartialBool ? "1" : "0";
+        Response.Headers["X-Limit"] = limit.ToString();
         return results;
     }
 }

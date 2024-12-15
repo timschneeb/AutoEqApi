@@ -9,18 +9,13 @@ namespace AutoEqApi.Controllers;
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("/")]
-public class RootController : ControllerBase
+public class RootController(ILogger<RootController> logger) : ControllerBase
 {
-    private readonly ILogger<RootController> _logger;
+    private readonly ILogger<RootController> _logger = logger;
 
-    public RootController(ILogger<RootController> logger)
-    {
-        _logger = logger;
-    }
-    
     [HttpGet]
     public ActionResult<string> Get()
     {
-        return Redirect("https://github.com/ThePBone/AutoEqApi");
+        return Redirect("https://github.com/timschneeb/AutoEqApi");
     }
 }

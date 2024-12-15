@@ -1,18 +1,15 @@
-using System.Collections;
 using System.Net;
-using System.Text;
 using System.Text.Json;
 using AutoEqApi.Model;
 using SharpCompress.Archives;
 using SharpCompress.Common;
-using SharpCompress.Readers;
 using Timer = System.Timers.Timer;
 
 namespace AutoEqApi.Utils;
 
 public static class AeqIndexCache
 {
-    private static Dictionary<long, AeqSearchResult> index = new();
+    private static Dictionary<long, AeqSearchResult> _index = new();
     private static readonly Timer _timer;
 
     static AeqIndexCache()
@@ -144,7 +141,7 @@ public static class AeqIndexCache
         Console.WriteLine($"Update {remoteVersion.Commit} applied");
     }
 
-    public static async Task Reload()
+    private static async Task Reload()
     {
         var newIndex = new Dictionary<long, AeqSearchResult>();
         var items = await JsonFileReader.ReadAsync<AeqSearchResult[]>(@"database/index.json");
@@ -161,25 +158,25 @@ public static class AeqIndexCache
             newIndex.Add(item.Id, item);
         }
         
-        index.Clear();
-        index = newIndex;
+        _index.Clear();
+        _index = newIndex;
     }
 
-    public static AeqSearchResult? LookupId(long id) => index.ContainsKey(id) ? index[id] : null;
+    public static AeqSearchResult? LookupId(long id) => _index.ContainsKey(id) ? _index[id] : null;
 
     public static AeqSearchResult[] Search(string query, int limit, out bool isPartialResult)
     {
         isPartialResult = false;
         
         if (query.Trim().Length < 1)
-            return Array.Empty<AeqSearchResult>();
+            return [];
 
-        var results = index.Values
+        var results = _index.Values
             .Where(x => x.Name?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)
             .Take(limit + 1)
             .ToArray();
 
-        isPartialResult = results.Count() > limit;
+        isPartialResult = results.Length > limit;
 
         return results
             .Take(limit)
