@@ -9,7 +9,6 @@ Search for headphone and speaker models by name
 GET /results/search/{query:string}
 ```
 #### Response
-
 | Response header  | Description                                                 |
 |------------------|-------------------------------------------------------------|
 | `X-Limit`          | Amount of maximum returned results                          |
@@ -33,7 +32,7 @@ GET /results/{id:long}
 ```
 | Response header | Description                           |
 |-----------------|---------------------------------------|
-| X-Profile-Id    | Id of requested profile data string   |
-| X-Profile-Name  | Device name of requested profile data string |
-| X-Profile-Source  | Source name of requested profile data string |
-| X-Profile-Rank  | Rank index of requested profile data string |
+| `X-Profile-Id`    | Id of requested profile data string   |
+| `X-Profile-Name`  | Device name of requested profile data string |
+| `X-Profile-Source`  | Source name of requested profile data string |
+| `X-Profile-Rank`  | Rank index of requested profile data string |
